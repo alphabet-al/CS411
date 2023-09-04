@@ -391,6 +391,22 @@ def epsilonP (startpoint, nodelist):
   
     return closestPoint
 
+
+# function to find farthest distance between n(number of) points
+def omegaP (startpoint, nodelist):
+    if len(nodelist) == 0:
+        return None
+
+    farthestPoint = nodelist[0]
+    farthestCost = util.manhattanDistance(startpoint, farthestPoint)
+    for goal in nodelist[1:]:
+        thisCost = util.manhattanDistance(startpoint, goal)
+        if thisCost > farthestCost:
+            farthestCost = thisCost
+            farthestPoint = goal
+  
+    return farthestPoint
+
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
@@ -412,12 +428,19 @@ class FoodSearchProblem:
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
         self.heuristicInfo = {} # A dictionary for the heuristic to store information
+        self.numFood = self.startingGameState.getNumFood()
+
+    def getNumFood(self):
+        return self.numFood
 
     def getStartState(self):
         return self.start
 
     def isGoalState(self, state):
         return state[1].count() == 0
+    
+    def getGameState(self):
+        return self.startingGameState   
 
     def getSuccessors(self, state):
         "Returns successor states, the actions they require, and a cost of 1."
@@ -482,9 +505,37 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
+
     "*** YOUR CODE HERE ***"
+    food_loc = find_all_food(foodGrid)
+
+    hcost = 0
+    agent_pos, corners = state
+    datum = agent_pos
+    gameState = problem.getGameState()
+
+    if len(food_loc) == 0:
+        return 0
     
-    return 0
+    closestfood = epsilonP(datum, food_loc) # check closest food
+    # farthestFood = omegaP(datum, food_loc) # check farthest food
+    closestcost = mazeDistance(datum, closestfood, gameState)
+    # farclosecost = mazeDistance(closestfood, farthestFood, gameState)
+
+    hcost = closestcost + problem.getNumFood() - 1
+
+    return hcost
+
+def find_all_food(foodG):
+    food_array = foodG
+    true_indices = []
+
+    for j in range(food_array.width):
+        for i in range(food_array.height):
+            if food_array[j][i]:
+                true_indices.append((j, i))
+
+    return (true_indices)
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -515,6 +566,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        return search.bfs(problem)
+    
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -551,8 +604,10 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
+        return self.food[x][y]
+    
         util.raiseNotDefined()
-
+   
 def mazeDistance(point1, point2, gameState):
     """
     Returns the maze distance between any two points, using the search functions

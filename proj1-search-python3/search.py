@@ -86,11 +86,10 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
-    # back information on the direction of travel to get to this state. 
+    # visited contains nodes that are popped off of stack
     visited = set()
     # stack contains tuple of states to be expanded. tuple is in the form of 
-    # (node, direction, cost). 
+    # (state, direction, cost). 
     fringe = util.Stack()
     # intitialize root_node in same format as expanded successor state information
     root_node = (problem.getStartState(), [], 0)
@@ -109,7 +108,6 @@ def depthFirstSearch(problem):
         if state not in visited:
             visited.add(state)
             # evaluate the child nodes of current node and add to stack if isn't in visited
-            # we also store the parent-child node information in the parent dictionary
             for childState, action, childCost in problem.getSuccessors(state):
                 newPath = path  + [action]
                 newCost = cost + childCost
@@ -121,122 +119,68 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    
-    # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
-    # back information on the direction of travel to get to this state. 
-    visited = {}
+    # visited contains nodes that are popped off of stack
+    visited = set()
     # stack contains tuple of states to be expanded. tuple is in the form of 
-    # (node, direction, cost). 
+    # (state, direction, cost). 
     fringe = util.Queue()
-    # parent is an adjacency list used to determine child parent relationship and store
-    # that information without having to expand nodes again
-    parent = {}
-    # moveset is a list containing the moves to get to the goal state from start state
-    moveset = []
     # intitialize root_node in same format as expanded successor state information
-    root_node = (problem.getStartState(), 'Start', 0)
+    root_node = (problem.getStartState(), [], 0)
     fringe.push(root_node)
-    # list to check if child nodes are currently in the fringe.  If so, we don't explore any further.
-    is_on_queue = []
-    goal = 'False'
 
     # traversal through graph structure starting at start node
     while not fringe.isEmpty():
         # every time loop starts we pop the next value off of the stack and evaluate
-        # if it's the goal state, if so we set the node to goal and break out of the loop
-        node = fringe.pop()
-        if problem.isGoalState(node[0]):
-            goal = node[0]
-            visited[node[0]] = node[1]
-            break
+        (state, path, cost) = fringe.pop()
+
+        # if we are at goal, return sequence of moves
+        if problem.isGoalState(state):
+            return path
+            
         # we check if the current node is in the visited list and if not we add to the list
-        if node[0] not in visited:
-            visited[node[0]] = node[1]
+        if state not in visited:
+            visited.add(state)
             # evaluate the child nodes of current node and add to stack if isn't in visited
-            # we also store the parent-child node information in the parent dictionary
-            for child_node in problem.getSuccessors(node[0]):
-                if child_node[0] not in visited and child_node[0] not in is_on_queue:
-                    fringe.push(child_node)
-                    parent[child_node[0]] = node[0]
-                    is_on_queue.append(child_node[0])
-
-    # We set current node to goal node and traverse backwards through parent-child dictionary.
-    # This gives us the path from start to end and populates our moveset list.            
-    curr = goal
-    while (curr != root_node[0]):
-        moveset.insert(0, visited[curr])
-        curr = parent[curr]
-
-    return moveset
+            for childState, action, childCost in problem.getSuccessors(state):
+                newPath = path  + [action]
+                newCost = cost + childCost
+                newState = (childState, newPath, newCost)
+                fringe.push(newState)
 
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    
-    from util import Counter
-    
-    # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
-    # back information on the direction of travel to get to this state. 
-    visited = {}
+    # visited contains nodes that are popped off of stack
+    visited = set()
     # stack contains tuple of states to be expanded. tuple is in the form of 
-    # (node, direction, cost). 
+    # (state, direction, cost). 
     fringe = util.PriorityQueue()
-    # parent is an adjacency list used to determine child parent relationship and store
-    # that information without having to expand nodes again
-    parent = {}
-    # moveset is a list containing the moves to get to the goal state from start state
-    moveset = []    
-    # instantiate Counter object to help keep track of node cost.
-    node_cost = Counter()
     # intitialize root_node in same format as expanded successor state information
-    root_node = (problem.getStartState(), 'Start', 0)
-    node_cost[root_node[0]] = root_node[2]
-    fringe.push(root_node, 0)
-    # list to check if child nodes are currently in the fringe.  If so, we don't explore any further. 
-    is_on_queue = []                                                                                  
-
-
+    root_node = (problem.getStartState(), [], 0)
+    rootCost = root_node[-1] 
+    fringe.push(root_node, rootCost)
 
     # traversal through graph structure starting at start node
     while not fringe.isEmpty():
         # every time loop starts we pop the next value off of the stack and evaluate
-        # if it's the goal state, if so we set the node to goal and break out of the loop
-        node = fringe.pop()
-        if problem.isGoalState(node[0]):
-            goal = node[0]
-            visited[node[0]] = node[1]
-            break
+        (state, path, cost) = fringe.pop()
+
+        # if we are at goal, return sequence of moves
+        if problem.isGoalState(state):
+            return path
+            
         # we check if the current node is in the visited list and if not we add to the list
-        if node[0] not in visited:
-            visited[node[0]] = node[1]
+        if state not in visited:
+            visited.add(state)
             # evaluate the child nodes of current node and add to stack if isn't in visited
-            # we also store the parent-child node information in the parent dictionary
-            for child_node in problem.getSuccessors(node[0]):
-                # check if child node is in visited and if it has been on the queue.
-                if child_node[0] not in visited and child_node[0] not in is_on_queue: 
-                    node_cost[child_node[0]] = node_cost[node[0]] + child_node[2]
-                    fringe.update(child_node,node_cost[child_node[0]])
-                    parent[child_node[0]] = node[0]
-                    is_on_queue.append(child_node[0])
-                # check if the child node is in visited and if it is on the queue.  we update compare 
-                # update if the priority is higher
-                if child_node[0] not in visited and child_node[0] in is_on_queue: 
-                    if node_cost[child_node[0]] > node_cost[node[0]] + child_node[2]:
-                        node_cost[child_node[0]] = node_cost[node[0]] + child_node[2]
-                        fringe.update(child_node,node_cost[child_node[0]])
-                        parent[child_node[0]] = node[0]
-                        is_on_queue.append(child_node[0])
+            for childState, action, childCost in problem.getSuccessors(state):
+                newPath = path  + [action]
+                newCost = cost + childCost
+                newState = (childState, newPath, newCost)
+                fringe.push(newState, newCost)
 
-    # We set current node to goal node and traverse backwards through parent-child dictionary.
-    # This gives us the path from start to end and populates our moveset list.            
-    curr = goal
-    while (curr != root_node[0]):
-        moveset.insert(0, visited[curr])
-        curr = parent[curr]
-
-    return moveset
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
@@ -246,88 +190,13 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-'''
-def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-
-    from util import Counter
-    
-    # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
-    # back information on the direction of travel to get to this state. 
-    visited = {}
-    # stack contains tuple of states to be expanded. tuple is in the form of 
-    # (node, direction, cost). 
-    fringe = util.PriorityQueue()
-    # parent is an adjacency list used to determine child parent relationship and store
-    # that information without having to expand nodes again
-    parent = {}
-    # moveset is a list containing the moves to get to the goal state from start state
-    moveset = []    
-    # instantiate Counter object to help keep track of node cost.
-    g_cost = Counter()
-    f_cost = Counter()
-    # intitialize root_node in same format as expanded successor state information
-    root_node = (problem.getStartState(), 'Start', 0)
-    g_cost[root_node[0]] = root_node[2]
-    f_cost[root_node[0]] = g_cost[root_node[0]] + heuristic(root_node[0], problem)
-    fringe.push(root_node, 0)
-    # list to check if child nodes are currently in the fringe.  If so, we don't explore any further. 
-    is_on_queue = []                                                                             
-
-
-
-    # traversal through graph structure starting at start node
-    while not fringe.isEmpty():
-        # every time loop starts we pop the next value off of the stack and evaluate
-        # if it's the goal state, if so we set the node to goal and break out of the loop
-        node = fringe.pop()
-        if problem.isGoalState(node[0]):
-            goal = node[0]
-            visited[node[0]] = node[1]
-            break
-        # we check if the current node is in the visited list and if not we add to the list
-        if node[0] not in visited:
-            visited[node[0]] = node[1]
-            # evaluate the child nodes of current node and add to stack if isn't in visited
-            # we also store the parent-child node information in the parent dictionary
-            for child_node in problem.getSuccessors(node[0]):
-                # check if child node is in visited and if it has been on the queue.
-                if child_node[0] not in visited and child_node[0] not in is_on_queue: 
-                    g_cost[child_node[0]] = g_cost[node[0]] + child_node[2]
-                    f_cost[child_node[0]] = g_cost[child_node[0]] + heuristic(child_node[0], problem)
-                    fringe.update(child_node,f_cost[child_node[0]])
-                    parent[child_node[0]] = node[0]
-                    is_on_queue.append(child_node[0])
-                # check if the child node is in visited and if it is on the queue.  we update compare 
-                # update if the priority is higher
-                if child_node[0] not in visited and child_node[0] in is_on_queue: 
-                    if f_cost[child_node[0]] > g_cost[node[0]] + child_node[2] + heuristic(child_node[0], problem):
-                        f_cost[child_node[0]] = g_cost[node[0]] + child_node[2] + heuristic(child_node[0], problem)
-                        fringe.update(child_node,f_cost[child_node[0]])
-                        parent[child_node[0]] = node[0]
-                        is_on_queue.append(child_node[0])
-
-    # We set current node to goal node and traverse backwards through parent-child dictionary.
-    # This gives us the path from start to end and populates our moveset list.            
-    curr = goal
-    while (curr != root_node[0]):
-        moveset.insert(0, visited[curr])
-        curr = parent[curr]
-
-    return moveset
-
-    util.raiseNotDefined()
-'''
-
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***" 
-    # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
-    # back information on the direction of travel to get to this state. 
+    # visited contains nodes that are popped off of stack
     visited = set()
     # stack contains tuple of states to be expanded. tuple is in the form of 
-    # (node, direction, cost). 
+    # (state, direction, cost). 
     fringe = util.PriorityQueue()
     # intitialize root_node in same format as expanded successor state information
     root_node = (problem.getStartState(), [], 0)
@@ -347,7 +216,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         if state not in visited:
             visited.add(state)
             # evaluate the child nodes of current node and add to stack if isn't in visited
-            # we also store the parent-child node information in the parent dictionary
             for childState, action, childCost in problem.getSuccessors(state):
                 newPath = path  + [action]
                 newCost = cost + childCost
