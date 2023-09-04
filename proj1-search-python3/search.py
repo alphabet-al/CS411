@@ -61,7 +61,6 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
-
 def tinyMazeSearch(problem):
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -71,6 +70,7 @@ def tinyMazeSearch(problem):
     s = Directions.SOUTH
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -89,46 +89,33 @@ def depthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
     # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
     # back information on the direction of travel to get to this state. 
-    visited = {}
+    visited = set()
     # stack contains tuple of states to be expanded. tuple is in the form of 
     # (node, direction, cost). 
     fringe = util.Stack()
-    # parent is an adjacency list used to determine child parent relationship and store
-    # that information without having to expand nodes again
-    parent = {}
-    # moveset is a list containing the moves to get to the goal state from start state
-    moveset = []
     # intitialize root_node in same format as expanded successor state information
-    root_node = (problem.getStartState(), 'Start', 0)
+    root_node = (problem.getStartState(), [], 0)
     fringe.push(root_node)
 
     # traversal through graph structure starting at start node
     while not fringe.isEmpty():
         # every time loop starts we pop the next value off of the stack and evaluate
-        # if it's the goal state, if so we set the node to goal and break out of the loop
-        node = fringe.pop()
-        if problem.isGoalState(node[0]):
-            goal = node[0]
-            visited[node[0]] = node[1]
-            break
+        (state, path, cost) = fringe.pop()
+
+        # if we are at goal, return sequence of moves
+        if problem.isGoalState(state):
+            return path
+            
         # we check if the current node is in the visited list and if not we add to the list
-        if node[0] not in visited:
-            visited[node[0]] = node[1]
+        if state not in visited:
+            visited.add(state)
             # evaluate the child nodes of current node and add to stack if isn't in visited
             # we also store the parent-child node information in the parent dictionary
-            for child_node in problem.getSuccessors(node[0]):
-                if child_node[0] not in visited:
-                    fringe.push(child_node)
-                    parent[child_node[0]] = node[0]
-
-    # We set current node to goal node and traverse backwards through parent-child dictionary.
-    # This gives us the path from start to end and populates our moveset list.            
-    curr = goal
-    while (curr != root_node[0]):
-        moveset.insert(0, visited[curr])
-        curr = parent[curr]
-
-    return moveset
+            for childState, action, childCost in problem.getSuccessors(state):
+                newPath = path  + [action]
+                newCost = cost + childCost
+                newState = (childState, newPath, newCost)
+                fringe.push(newState)
 
     util.raiseNotDefined()
 
@@ -260,6 +247,7 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+'''
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
@@ -331,7 +319,44 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     return moveset
 
     util.raiseNotDefined()
+'''
 
+def aStarSearch(problem, heuristic=nullHeuristic):
+    """Search the node that has the lowest combined cost and heuristic first."""
+    "*** YOUR CODE HERE ***" 
+    # visited contains nodes that are popped off of stack, Dictionary structure to quickly call
+    # back information on the direction of travel to get to this state. 
+    visited = set()
+    # stack contains tuple of states to be expanded. tuple is in the form of 
+    # (node, direction, cost). 
+    fringe = util.PriorityQueue()
+    # intitialize root_node in same format as expanded successor state information
+    root_node = (problem.getStartState(), [], 0)
+    rootCost = heuristic(root_node[0], problem) + root_node[-1] 
+    fringe.push(root_node, rootCost)
+
+    # traversal through graph structure starting at start node
+    while not fringe.isEmpty():
+        # every time loop starts we pop the next value off of the stack and evaluate
+        (state, path, cost) = fringe.pop()
+
+        # if we are at goal, return sequence of moves
+        if problem.isGoalState(state):
+            return path
+            
+        # we check if the current node is in the visited list and if not we add to the list
+        if state not in visited:
+            visited.add(state)
+            # evaluate the child nodes of current node and add to stack if isn't in visited
+            # we also store the parent-child node information in the parent dictionary
+            for childState, action, childCost in problem.getSuccessors(state):
+                newPath = path  + [action]
+                newCost = cost + childCost
+                newState = (childState, newPath, newCost)
+                newCost += heuristic(newState[0], problem)
+                fringe.push(newState, newCost)
+
+    util.raiseNotDefined()
 
 # Abbreviations
 bfs = breadthFirstSearch

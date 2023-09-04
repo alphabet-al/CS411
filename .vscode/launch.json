@@ -13,11 +13,15 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
+            // "args": ["-l", "tinyCorners", "-p", "AStarCornersAgent", "-z", "0.5"]
+            // "args": ["-l", "tinyMaze", "-p", "SearchAgent"],
             // "args": ["-l", "tinyCorners", "-p", "SearchAgent", "-a", "fn=bfs"],
-            // "args": ["-l", "tinyCorners", "-p", "SearchAgent", "-a", "fn=bfs,prob=CornersProblem"],
+            "args": ["-l", "tinyCorners", "-p", "SearchAgent", "-a", "fn=dfs,prob=CornersProblem"],
             // "args": ["-l", "tinyCorners", "-p", "SearchAgent", "-a", "fn=bfs,prob=FoodSearchProblem"],
-            "args": ["-l", "bigMaze", "-z", ".5", "-p", "SearchAgent", "-a", "fn=astar,heuristic=manhattanHeuristic"],
+            // "args": ["-l", "bigMaze", "-z", ".5", "-p", "SearchAgent", "-a", "fn=astar,heuristic=manhattanHeuristic"],
             // "args": ["-l", "mediumCorners", "-p", "AStarCornersAgent", "-z", "0.5"],
+            // "args": ["-l", "trickySearch", "-p", "AStarFoodSearchAgent"],
+
             "cwd": "${fileDirname}"
         }
     ]
